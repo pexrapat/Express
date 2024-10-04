@@ -1,0 +1,97 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const product_1 = __importDefault(require("../db/product"));
+// Handler to get all products
+const getAll = async (req, res) => {
+    try {
+        const products = await product_1.default.selectAll();
+        res.status(200).send({
+            message: "OK",
+            result: products,
+        });
+    }
+    catch (err) {
+        console.error("Error fetching products:", err); // Log the full error
+        res.status(500).send({
+            message: "DATABASE ERROR",
+            error: err.message || "Unknown error", // Ensure error.message is used safely
+        });
+    }
+};
+// Handler to delete a product by ID
+const deleteById = async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+        return res.status(400).send({
+            message: "Invalid ID format",
+        });
+    }
+    try {
+        await product_1.default.deleteProductById(id);
+        res.status(200).send({
+            message: "OK",
+            result: `Product with ID ${id} deleted successfully`,
+        });
+    }
+    catch (err) {
+        console.error(`Error deleting product with ID ${id}:`, err); // Log the full error
+        res.status(500).send({
+            message: "DATABASE ERROR",
+            error: err.message || "Unknown error", // Ensure error.message is used safely
+        });
+    }
+};
+// Handler to insert a new product
+const insertProduct = async (req, res) => {
+    const { id, name, price } = req.body;
+    // Basic validation
+    if (typeof id !== "number" ||
+        typeof name !== "string" ||
+        typeof price !== "number") {
+        return res.status(400).send({
+            message: "Invalid input data",
+        });
+    }
+    try {
+        await product_1.default.insertProduct(id, name, price);
+        res.status(201).send({
+            message: "Product created successfully",
+        });
+    }
+    catch (err) {
+        console.error("Error inserting product:", err); // Log the full error
+        res.status(500).send({
+            message: "DATABASE ERROR",
+            error: err.message || "Unknown error", // Ensure error.message is used safely
+        });
+    }
+};
+// Handler to update an existing product by ID
+const updateProduct = async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const { name, price } = req.body;
+    // Basic validation
+    if (isNaN(id) || typeof name !== "string" || typeof price !== "number") {
+        return res.status(400).send({
+            message: "Invalid input data",
+        });
+    }
+    try {
+        await product_1.default.updateProduct(id, name, price);
+        res.status(200).send({
+            message: `Product with ID ${id} updated successfully`,
+        });
+    }
+    catch (err) {
+        console.error(`Error updating product with ID ${id}:`, err); // Log the full error
+        res.status(500).send({
+            message: "DATABASE ERROR",
+            error: err.message || "Unknown error", // Ensure error.message is used safely
+        });
+    }
+};
+exports.default = { getAll, deleteById, insertProduct, updateProduct };
+//# sourceMappingURL=product.controller.js.map
